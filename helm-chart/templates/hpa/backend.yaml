@@ -1,0 +1,18 @@
+{{- if .Values.beAutoscaling.enabled }}
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  namespace: backend
+  name: backend-hpa
+  labels:
+    tier: backend
+spec:
+  minReplicas: {{ .Values.beAutoscaling.minReplicas }}
+  maxReplicas: {{ .Values.beAutoscaling.maxReplicas }}
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend-deployment
+  targetCPUUtilizationPercentage: {{ .Values.beAutoscaling.targetCPUPercentage }}
+{{- end }}
+ 

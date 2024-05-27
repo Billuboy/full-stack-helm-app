@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: frontend
+  name: frontend-deployment
+  labels:
+    app: frontend
+    tier: client
+spec:
+  replicas: {{
+      ternary .Values.feAutoscaling.minReplicas .Values.feReplicaCount .Values.feAutoscaling.enabled
+    }}
+  selector:
+    matchLabels:
+      role: frontend_pods
+  template:
+    metadata:
+      labels:
+        role: frontend_pods
+        tier: client
+    spec:
+      containers:
+        - name: {{ .Values.feContainer.name }}
+          image: {{ .Values.feContainer.image }}
+          envFrom:
+            - secretRef:
+                name: client-secrets
+          {{- if .Values.feContainer.livenessProbe }}
+          livenessProbe: {{ .Values.feContainer.livenessProbe | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.feContainer.readinessProbe }}
+          readinessProbe: {{ .Values.feContainer.readinessProbe | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.feContainer.resources }}
+          resources: {{ .Values.feContainer.resources | toYaml | nindent 12 }}
+          {{- end }}

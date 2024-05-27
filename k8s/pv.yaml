@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  namespace: db
+  name: db-pv
+  labels:
+    type: host-pv
+spec:
+  storageClassName: ''
+  accessModes:
+    - ReadWriteMany
+  capacity:
+    storage: '1500Mi'
+  hostPath:
+    path: /data/k8s-pgdata

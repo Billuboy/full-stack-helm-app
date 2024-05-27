@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: backend
+  name: backend-deployment
+  labels:
+    app: backend
+    tier: backend
+spec:
+  replicas: {{ ternary .Values.beAutoscaling.minReplicas .Values.beReplicaCount .Values.beAutoscaling.enabled }}
+  selector:
+    matchLabels:
+      role: backend_pods
+  template:
+    metadata:
+      labels:
+        role: backend_pods
+        tier: backend
+    spec:
+      containers:
+        - name: {{ .Values.beContainer.name }}
+          image: {{ .Values.beContainer.image }}
+          {{- if .Values.beContainer.securityContext }}
+          securityContext: {{ .Values.beContainer.securityContext | toYaml | nindent 12 }}
+          {{- end }}
+          envFrom:
+            - secretRef:
+                name: backend-secrets
+          {{- if .Values.beContainer.livenessProbe }}
+          livenessProbe: {{ .Values.beContainer.livenessProbe | toYaml | nindent 12}}
+          {{- end }}
+          {{- if .Values.beContainer.readinessProbe }}
+          readinessProbe: {{ .Values.beContainer.readinessProbe | toYaml | nindent 12 }}
+          {{- end}}
+          {{- if .Values.beContainer.resources }}
+          resources: {{ .Values.beContainer.resources | toYaml | nindent 12 }}
+          {{- end }}
+            # limits:
+            #   cpu: '200m'
+            #   memory: '512Mi'

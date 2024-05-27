@@ -1,0 +1,36 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: frontend
+  name: client-node-port-svc
+  labels:
+    task: client-node-port-svc
+spec:
+  ports:
+    - name: client
+      nodePort: 30001 # NodePort defines the port to be used on the local system. NodePort ranges between 30000-32767
+      port: 3000 # Port defines the port to be used by applications in K8s cluster to communicate with the service
+      targetPort: 3000 # TargetPort defines the container's exposed port to be used by the service for proxying
+  selector:
+    tier: client
+  type: NodePort
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   namespace: frontend
+#   name: client-load-svc
+#   labels:
+#     task: client-load-svc
+# spec:
+#   ports:
+#     - name: client
+#       nodePort: 30002 # NodePort defines the port to be used on the local system. NodePort ranges between 30000-32767
+#       port: 3000 # Port defines the port to be used by applications in K8s cluster to communicate with the service
+#       targetPort: 3000 # TargetPort defines the container's exposed port to be used by the service for proxying
+#   selector:
+#     tier: client
+#   type: LoadBalancer
+#   externalIPs:
+#     - 192.168.49.2

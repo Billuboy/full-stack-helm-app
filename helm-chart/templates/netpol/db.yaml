@@ -1,0 +1,50 @@
+{{- if .Values.dbNetpol.enabled -}}
+{{- if .Values.dbNetpol.resetNetwork -}}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  namespace: db
+  name: default-deny-netpol
+  labels:
+    tier: database
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+{{- end }}
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  namespace: db
+  name: db-netpol
+  labels:
+    tier: database
+spec:
+  podSelector:
+    matchLabels:
+      role: db_pods
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              space: backend-space
+          podSelector:
+            matchLabels:
+              role: backend_pods
+      ports:
+        - protocol: TCP
+          port: 5432
+    # This ingress policy will allow traffic from node-port service for testing the application in local setup.
+    - from:
+        - ipBlock:
+            cidr: 192.168.49.0/24
+      ports:
+        - protocol: TCP
+          port: 5432
+{{- end }}

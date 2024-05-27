@@ -1,0 +1,73 @@
+services:
+  postgres_db:
+    build:
+      context: database
+      dockerfile: Dockerfile
+    container_name: postgres_db
+    image: k8s_postgres_db
+    # image: billuboy/k8s_postgres_db:1
+    restart: unless-stopped
+    env_file:
+      - ./database/.env
+    environment:
+      - POSTGRES_USER:$POSTGRES_USER
+      - POSTGRES_PASSWORD:$POSTGRES_PASSWORD
+      - POSTGRES_DB:$POSTGRES_DB
+    ports:
+      - $POSTGRES_LOCAL_PORT:5432
+    volumes:
+      - postgres_volume:/var/lib/postgresql/pgdata
+    networks:
+      - back_end
+
+  api_server:
+    # build:
+    #   context: ./backend
+    #   dockerfile: Dockerfile
+    container_name: api_server
+    image: billuboy/k8s_api_server:1
+    command: node server.js
+    env_file:
+      - ./backend/.env.production
+    # environment:
+    #   - API_ENV:$API_ENV
+    #   - DB_CONN_STRING:$DB_CONN_STRING
+    ports:
+      - $API_LOCAL_PORT:8080
+    depends_on:
+      - postgres_db
+    networks:
+      - back_end
+      - front_end
+
+  client:
+    # build:
+    #   context: ./client
+    #   dockerfile: Dockerfile
+    container_name: client
+    image: billuboy/k8s_frontend:1
+    command: node server.js
+    env_file:
+      - ./client/.env.production
+    ports:
+      - $CLIENT_LOCAL_PORT:3000
+    networks:
+      - front_end
+
+volumes:
+  postgres_volume:
+    name: postgres_volume
+    driver: local
+    driver_opts:
+      type: none
+      device: $PWD/database/postgres
+      o: bind
+
+networks:
+  host:
+    external: true
+    name: host
+  front_end:
+    name: k8s_frontend_nw
+  back_end:
+    name: k8s_backend_nw

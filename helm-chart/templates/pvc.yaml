@@ -1,0 +1,19 @@
+{{- if .Values.dbVolume.enabled  }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: db
+  name: {{ .Values.dbVolume.pvc.name }}
+  labels:
+    type: postgres-db-pvc
+spec:
+  storageClassName: {{ .Values.dbVolume.storageClass | quote }}
+  volumeName: {{ .Values.dbVolume.pv.name }}
+  accessModes: {{  .Values.dbVolume.pv.accessModes | toYaml | nindent 4 }}
+  selector:
+    matchLabels:
+      type: host-pv
+  resources:
+    requests:
+      storage: {{ .Values.dbVolume.pvc.storageRequest }}
+{{- end }}

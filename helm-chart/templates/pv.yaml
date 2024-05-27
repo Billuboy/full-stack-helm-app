@@ -1,0 +1,17 @@
+{{- if .Values.dbVolume.enabled  }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  namespace: db
+  name: {{ .Values.dbVolume.pv.name }}
+  labels:
+    type: host-pv
+spec:
+  storageClassName: {{ .Values.dbVolume.storageClass | quote }}
+  accessModes: {{ .Values.dbVolume.pv.accessModes | toYaml | nindent 4 }}
+  capacity:
+    storage: {{ .Values.dbVolume.pv.storageCapacity }}
+  hostPath:
+    path: {{ .Values.dbVolume.pv.hostPathMount }}
+  persistentVolumeReclaimPolicy: {{ .Values.dbVolume.pv.reclaimPolicy }}
+{{- end }}

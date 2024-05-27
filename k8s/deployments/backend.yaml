@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: backend
+  name: backend-deployment
+  labels:
+    app: backend
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      role: backend_pods
+  template:
+    metadata:
+      labels:
+        role: backend_pods
+        tier: backend
+    spec:
+      containers:
+        - name: k8s-api
+          image: billuboy/k8s_api_server:1
+          securityContext:
+            runAsUser: 1002
+          envFrom:
+            - secretRef:
+                name: backend-secrets

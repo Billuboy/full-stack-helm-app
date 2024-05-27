@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: db
+  name: db-sts
+  labels:
+    app: db
+    tier: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: db_pods
+  template:
+    metadata:
+      labels:
+        role: db_pods
+        tier: database
+    spec:
+      containers:
+        - name: postgres-db-pod
+          image: postgres:16-alpine
+          # securityContext:
+          #   runAsUser: 70
+          # image: billuboy/k8s_postgres_db:2
+          resources: {}
+          envFrom:
+            - secretRef:
+                name: db-secrets
+          volumeMounts:
+            - name: db-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: db-data
+          persistentVolumeClaim:
+            claimName: db-pvc

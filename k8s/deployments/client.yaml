@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: frontend
+  name: frontend-deployment
+  labels:
+    app: frontend
+    tier: client
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      role: frontend_pods
+  template:
+    metadata:
+      labels:
+        role: frontend_pods
+        tier: client
+    spec:
+      containers:
+        - name: k8s-client
+          image: billuboy/k8s_frontend:1
+          envFrom:
+            - secretRef:
+                name: client-secrets

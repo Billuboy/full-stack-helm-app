@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: db
+  name: db-sts
+  labels:
+    app: db
+    tier: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: db_pods
+  template:
+    metadata:
+      labels:
+        role: db_pods
+        tier: database
+    spec:
+      containers:
+        - name: {{ .Values.dbContainer.name }}
+          image: {{ .Values.dbContainer.image }}
+          {{- if .Values.dbContainer.securityContext }}
+          securityContext: {{ .Values.dbContainer.securityContext | toYaml | nindent 12 }}
+          {{- end }}
+          envFrom:
+            - secretRef:
+                name: db-secrets
+          {{- if .Values.dbContainer.livenessProbe }}
+          livenessProbe: {{ .Values.dbContainer.livenessProbe | toYaml |  nindent 12 }}
+          {{- end }}
+          {{- if .Values.dbContainer.readinessProbe }}
+          readinessProbe: {{ .Values.dbContainer.readinessProbe | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.dbVolume.enabled }}
+          volumeMounts:
+            - name: {{ .Values.dbVolume.name  }}
+              mountPath: {{ .Values.dbVolume.containerMountPath }}
+          {{- end }}
+          {{- if .Values.dbContainer.resources }}
+          resources: {{ .Values.dbContainer.resources | toYaml | nindent 12 }}
+          {{- end }}
+      {{- if .Values.dbVolume.enabled }}
+      volumes:
+        - name: {{ .Values.dbVolume.name  }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.dbVolume.pvc.name }}
+      {{- end }}

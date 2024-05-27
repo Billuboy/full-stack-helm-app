@@ -1,0 +1,58 @@
+{{- if .Values.beNetpol.enabled -}}
+{{- if .Values.beNetpol.resetNetwork -}}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  namespace: backend
+  name: default-deny-netpol
+  labels:
+    tier: backend
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+{{- end }}
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  namespace: backend
+  name: backend-netpol
+  labels:
+    tier: backend
+spec:
+  podSelector:
+    matchLabels:
+      role: backend_pods
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              space: client-space
+          podSelector:
+            matchLabels:
+              role: frontend_pods
+      ports:
+        - protocol: TCP
+          port: 8000
+    # This ingress policy will allow traffic from node-port service for testing the application in local setup.
+    - from:
+        - ipBlock:
+            cidr: 192.168.49.0/24
+      ports:
+        - protocol: TCP
+          port: 8000
+
+  # Leaving egress empty will block any egress traffic to any other service apart from the database pods.
+  # Apart from frontend pods, this policy will block egress traffic to all the third-party websites as well.
+  # If your application depends on third-party APIs, please don't use this policy.
+  # To allow third party APIs, you can use either of these steps:
+  # 1. You can add the IP address of the third-party APIs in the egress allowed list.
+  # 2. You can use Calico Enterprise to allow FQDN(s) in your egress allowed list.
+  # 3. You can use GKE Entrprise to allow FQDN(s) in your egress allowed list.
+{{- end }}

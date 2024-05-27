@@ -1,0 +1,35 @@
+# Database service for local testing
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: db
+  name: db-node-port-svc
+  labels:
+    task: db-node-port-svc
+spec:
+  ports:
+    - name: postgres
+      targetPort: 5432
+      port: 5432
+      nodePort: 30432
+  selector:
+    tier: database
+  type: NodePort
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: db
+  name: db-clusterip-svc
+  labels:
+    task: db-clusterip-svc
+spec:
+  ports:
+    - name: postgres
+      targetPort: 5432
+      port: 5432
+  selector:
+    tier: database
+  type: ClusterIP
