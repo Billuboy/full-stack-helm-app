@@ -5,6 +5,9 @@ import {
   getUsersController,
   createUserController,
 } from '@controllers/users.controller';
+import authMiddleware from '@middlewares/auth.middleware';
+import { signupBodySchema } from '@validations/user.validations';
+import validationMiddleware from '@middlewares/validation.middleware';
 
 const userRouter = Router();
 
@@ -16,11 +19,11 @@ userRouter.get('/', getUsersController);
 // @route   GET /users/:userId
 // @desc    Route for getting a particular user.
 // @access  Public
-userRouter.get('/:userId', getUserController);
+userRouter.get('/:userId', authMiddleware, getUserController);
 
 // @route   POST /users
 // @desc    Route for registring a user.
 // @access  Public
-userRouter.post('/', createUserController);
+userRouter.post('/', validationMiddleware(signupBodySchema), createUserController);
 
 export default userRouter;
